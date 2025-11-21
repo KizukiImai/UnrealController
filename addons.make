@@ -1,0 +1,10 @@
+ofxFft
+ofxGui
+ofxImGui
+ofxMidi
+ofxmidiManager
+ofxOsc
+ofxPostProcessing
+ofxRealtimeaudioProcessor
+ofxSpout2
+ofxXmlSettings

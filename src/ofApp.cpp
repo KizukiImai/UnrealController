@@ -5,6 +5,7 @@ void ofApp::drawImGui(){
 
 	gui.begin();
     drawMidiMix();
+	drawLaunchPad();
 	gui.end();
 
 }
@@ -27,10 +28,23 @@ void ofApp::initMidiMixArray() {
     }
 }
 
+void ofApp::initLaunchPad() {
+    for (int i = 0; i < LP_PADS; ++i) {
+        int col = i % LP_COLS;    // 0〜7
+        int row = i / LP_COLS;    // 0〜7
+
+        launchPads[i].ParName = "Pad" + std::to_string(i + 1);
+        launchPads[i].val = 0.0f;
+        launchPads[i].lastSentVal = launchPads[i].val;
+
+        // 例: /launchpad/row/col （好きに変えてOK）
+        launchPads[i].oscAddress = "/launchpad/" + std::to_string(row) + "/" + std::to_string(col);
+    }
+}
+
+
 void ofApp::drawMidiMix() {
     if (ImGui::Begin("MIDIMIX")) {
-
-        // === 上：3×8 のノブ ===
         for (int col = 0; col < 8; ++col) {
             ImGui::BeginGroup();
             for (int row = 0; row < 3; ++row) {
@@ -48,8 +62,6 @@ void ofApp::drawMidiMix() {
         }
 
         ImGui::Separator();
-
-        // === 下：8本の縦フェーダー ===
         ImVec2 sliderSize(52, 120);
         for (int col = 0; col < 8; ++col) {
             int idx = NUM_KNOBS + col; // 24〜31
@@ -66,23 +78,55 @@ void ofApp::drawMidiMix() {
     ImGui::End();
 }
 
+void ofApp::drawLaunchPad() {
+    if (ImGui::Begin("LaunchPad")) {
+
+        ImVec2 padSize(32, 32);
+
+        for (int col = 0; col < LP_COLS; ++col) {
+            ImGui::BeginGroup();
+            for (int row = 0; row < LP_ROWS; ++row) {
+                int i = row * LP_COLS + col;  // 0〜63
+
+                ImGui::PushID(i);
+
+                ImGui::Button("##pad", padSize);
+                launchPads[i].val = ImGui::IsItemActive() ? 1.0f : 0.0f;
+                ImGui::Text("%s", launchPads[i].ParName.c_str());
+
+                ImGui::PopID();
+            }
+            ImGui::EndGroup();
+            if (col < LP_COLS - 1) ImGui::SameLine();
+        }
+    }
+    ImGui::End();
+}
+
+
 void ofApp::setupOsc(){
 	// Setup OSC here if 
 	ipAddress = xml.getValue("settings:OSC:ip", "localhost");
 	port = xml.getValue("settings:OSC:port", 9000);
-	oscsender.setup("127.0.0.1",9000);
-    // oscsender.setup(ipAddress, port);
+	//oscsender.setup("127.0.0.1",9000);
+    oscsender.setup(ipAddress, port);
+}
+void ofApp::setupSpout(){
+    // Setup Spout here if needed
+	spoutSenderName = xml.getValue("settings:spout:name", "ofxSpoutSender");
+	spout.setupAuto(spoutSenderName, spouttexture, false);
 }
 
 void ofApp::LinkMidi(){
 	// Link MIDI here if needed
-
 }
 
 void ofApp::setup(){
 	xml.loadFile("config.xml");
 	initMidiMixArray();
+	initLaunchPad();
 	setupOsc();
+	setupSpout();
 
 	ofxImGui::BaseTheme* theme = nullptr;
 	bool autoDraw = true;
@@ -96,12 +140,15 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    
 	sendOscChangedParamsOsc();
+	sendLaunchPadOsc();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 	drawImGui();
+    spouttexture.draw(0, 0);
 }
 
 //--------------------------------------------------------------
@@ -172,6 +219,21 @@ void ofApp::sendOscChangedParamsOsc(){
             oscsender.sendMessage(m, false);
 
             p.lastSentVal = p.val;                // 送った値を記録
+        }
+    }
+}
+
+void ofApp::sendLaunchPadOsc() {
+    const float EPS = 0.0001f;
+
+    for (int i = 0; i < LP_PADS; ++i) {
+        auto& p = launchPads[i];
+        if (fabs(p.val - p.lastSentVal) > EPS) {
+            ofxOscMessage m;
+            m.setAddress(p.oscAddress);
+            m.addFloatArg(p.val);       // 0.0 or 1.0
+            oscsender.sendMessage(m, false);
+            p.lastSentVal = p.val;
         }
     }
 }

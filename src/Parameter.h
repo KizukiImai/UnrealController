@@ -9,3 +9,10 @@ struct MidiMix {
 	float lastSentVal;
 	string oscAddress;
 };
+
+struct LaunchPad {
+	string ParName;
+	float val;
+	float lastSentVal;
+	string oscAddress;
+};

@@ -7,7 +7,11 @@
 		<deviceID_1>0</deviceID_1>
 		<deviceID_2>1</deviceID_2>
 	</midi>
-	
+	<spout>
+		<name>
+			UE5
+		</name>
+	</spout>
 	
 	
 </settings>

@@ -33,12 +33,19 @@ class ofApp : public ofBaseApp{
 		void LinkMidi();
 		void initMidiMixArray();
 		void drawMidiMix();
+		void sendLaunchPadOsc();
 		void sendOscChangedParamsOsc();
-
+		void initLaunchPad();
+		void drawLaunchPad();
+		void setupSpout();
 		ofxMidiManager midiManager;
 		ofxOscSender oscsender;
-		
 
+
+		ofTexture spouttexture;
+		string spoutSenderName;
+
+		ofx::spout2::Receiver spout;
 
 		ofxXmlSettings xml;
 		ofxImGui::Gui gui;
@@ -49,6 +56,12 @@ class ofApp : public ofBaseApp{
 		static const int NUM_KNOBS = 24;
 		static const int NUM_FADERS = 8;
 		static const int NUM_PARAMS = NUM_KNOBS + NUM_FADERS;
+
+		static const int LP_COLS = 8;
+		static const int LP_ROWS = 8;
+		static const int LP_PADS = LP_COLS * LP_ROWS;
+
+		LaunchPad launchPads[LP_PADS];
 
 		MidiMix midimixarray[NUM_PARAMS];
 		

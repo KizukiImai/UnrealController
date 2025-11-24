@@ -12,6 +12,14 @@
 			UE5
 		</name>
 	</spout>
+	<outputResolution>
+		<width>
+			1920
+		</width>
+		<height>
+			1080
+		</height>
+	</outputResolution>
 	
 	
 </settings>

@@ -8,6 +8,7 @@
 #include "ofxOsc.h"
 #include "ofxMidiManager.h"
 #include "ofxSpout2Receiver.h"
+#include "ofxPostProcessing.h"
 
 
 class ofApp : public ofBaseApp{
@@ -16,8 +17,9 @@ class ofApp : public ofBaseApp{
 		void setup();
 		void update();
 		void draw();
-
 		void keyPressed(int key);
+
+
 		void keyReleased(int key);
 		void mouseMoved(int x, int y );
 		void mouseDragged(int x, int y, int button);
@@ -28,6 +30,8 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
+
+		//Util
 		void drawImGui();
 		void setupOsc();
 		void LinkMidi();
@@ -38,9 +42,22 @@ class ofApp : public ofBaseApp{
 		void initLaunchPad();
 		void drawLaunchPad();
 		void setupSpout();
+		void drawDebugTexture();
+		void updateLaunchPadEasing();
+		void updateLaunchPadFromMidi();
+		void setupMidi();
+		void updateMidi();
+
 		ofxMidiManager midiManager;
 		ofxOscSender oscsender;
 
+		ofxMidiManager launchpad;
+		ofxMidiManager midimix;
+
+
+		int OutWidth;
+		int OutHeight;
+		ofxPostProcessing postprocess;
 
 		ofTexture spouttexture;
 		string spoutSenderName;
@@ -60,6 +77,8 @@ class ofApp : public ofBaseApp{
 		static const int LP_COLS = 8;
 		static const int LP_ROWS = 8;
 		static const int LP_PADS = LP_COLS * LP_ROWS;
+
+		float bpm = 240.0f;
 
 		LaunchPad launchPads[LP_PADS];
 

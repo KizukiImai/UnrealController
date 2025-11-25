@@ -1,35 +1,38 @@
-#pragma once
+ï»¿#pragma once
 float colorR = 0.0f;
 float colorG = 0.0f;
 float colorB = 0.0f;
 
 struct MidiMix {
-	string ParName;
-	float val;
-	float lastSentVal;
-	string oscAddress;
+    std::string ParName;
+    float val = 0.0f;          // 0ã€œ1 ã«æ­£è¦åŒ–ã—ãŸå€¤ï¼ˆOSC ã§ã‚‚ã“ã‚Œã‚’é€ã‚‹ï¼‰
+    float lastSentVal = 0.0f;  // æœ€å¾Œã« OSC é€ã£ãŸå€¤
+    std::string oscAddress;
+
+    int ccNumber = 0;          // ã“ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã«å¯¾å¿œã™ã‚‹ CC ç•ªå· (1ã€œâ€¦)
+    int lastCcValue = 0;       // å‰ãƒ•ãƒ¬ãƒ¼ãƒ ã® CC ç”Ÿå€¤ (0ã€œ127)
 };
 
 enum class LaunchPadSendMode {
-    Button,     // ‰Ÿ‚µ‚Ä‚éŠÔ 1, —£‚µ‚½‚ç 0
-    Toggle,     // ‰Ÿ‚·‚½‚Ñ‚É 0/1 ƒgƒOƒ‹
-    EaseShot,   // ˆê”‚©‚¯‚Ä 0¨1 ‚ÖƒC[ƒWƒ“ƒOiƒƒ“ƒVƒ‡ƒbƒgj
-    EaseLoop    // ˆê”‚©‚¯‚Ä 0¨1¨0 ‚ÖƒC[ƒWƒ“ƒOiƒƒ“ƒVƒ‡ƒbƒgj
+    Button,     // æŠ¼ã—ã¦ã‚‹é–“ 1, é›¢ã—ãŸã‚‰ 0
+    Toggle,     // æŠ¼ã™ãŸã³ã« 0/1 ãƒˆã‚°ãƒ«
+    EaseShot,   // ä¸€æ‹ã‹ã‘ã¦ 0â†’1 ã¸ã‚¤ãƒ¼ã‚¸ãƒ³ã‚°ï¼ˆãƒ¯ãƒ³ã‚·ãƒ§ãƒƒãƒˆï¼‰
+    EaseLoop    // ä¸€æ‹ã‹ã‘ã¦ 0â†’1â†’0 ã¸ã‚¤ãƒ¼ã‚¸ãƒ³ã‚°ï¼ˆãƒ¯ãƒ³ã‚·ãƒ§ãƒƒãƒˆï¼‰
 };
 
 struct LaunchPad {
     std::string ParName;
-    float val = 0.0f;   // Œ»İ‚Ì 0?1 ’liOSC ‚Å‘—‚éj
-    float lastSentVal = 0.0f;   // ÅŒã‚É OSC ‘—‚Á‚½’l
+    float val = 0.0f;   // ç¾åœ¨ã® 0?1 å€¤ï¼ˆOSC ã§é€ã‚‹ï¼‰
+    float lastSentVal = 0.0f;   // æœ€å¾Œã« OSC é€ã£ãŸå€¤
     std::string oscAddress;
 
     LaunchPadSendMode sendMode = LaunchPadSendMode::Button;
 
-    // ƒC[ƒWƒ“ƒOó‘Ô
+    // ã‚¤ãƒ¼ã‚¸ãƒ³ã‚°çŠ¶æ…‹
     bool  isAnimating = false;
     float animStartTime = 0.0f;
 
-    // MIDI CC ŠÖ˜A
-    int   ccNumber = 0;   // ‚±‚Ì Pad ‚Ì CC ”Ô† (0?63)
-    int   lastCcValue = 0;   // ‘OƒtƒŒ[ƒ€‚Ì CC ’l (0?127)
+    // MIDI CC é–¢é€£
+    int   ccNumber = 0;   // ã“ã® Pad ã® CC ç•ªå· (0?63)
+    int   lastCcValue = 0;   // å‰ãƒ•ãƒ¬ãƒ¼ãƒ ã® CC å€¤ (0?127)
 };

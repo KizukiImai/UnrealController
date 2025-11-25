@@ -26,7 +26,7 @@ void ofApp::drawImGui(){
 void ofApp::setupMidi() {
 	midimix.listPorts();
 	//launchpad.listPorts();
-    midimix.setup(0);
+    midimix.setup(3);
 	launchpad.setup(1);
 
 }
@@ -34,27 +34,56 @@ void ofApp::setupMidi() {
 void ofApp::updateMidi() {
 	midimix.update();
 	launchpad.update();
+	updateMidiMixFromMidi();   // ★ Midimix のノブ/フェーダーの状態を反映
     updateLaunchPadFromMidi();   // ★ まず実機の状態を反映
     updateLaunchPadEasing();     // ★ EaseShot/EaseLoop のアニメを進める
 }
 
+void ofApp::updateMidiMixFromMidi() {
+    for (int i = 0; i < NUM_PARAMS; ++i) { // NUM_PARAMS = NUM_KNOBS + NUM_FADERS
+        auto& p = midimixarray[i];
+
+        int cc = midimix.getCCValue(2,p.ccNumber); // 0〜127 が返ってくる想定
+
+        // 値が変わっていなければ何もしない（好みで省略してもOK）
+        if (cc == p.lastCcValue) continue;
+
+        // 0〜127 → 0.0〜1.0 に正規化
+        p.val = ofMap(cc, 0, 127, 0.0f, 1.0f, true);
+
+        p.lastCcValue = cc;
+    }
+}
+
+
 void ofApp::initMidiMixArray() {
+    int ccBase = 1; // Knob1 → CC1
+
+    // ノブ 24 個 (3x8)
     for (int i = 0; i < NUM_KNOBS; ++i) {
         midimixarray[i].ParName = "Knob" + std::to_string(i + 1);
         midimixarray[i].val = 0.0f;
         midimixarray[i].lastSentVal = midimixarray[i].val;
         midimixarray[i].oscAddress = "/midimix/knob/" + std::to_string(i + 1);
+
+        midimixarray[i].ccNumber = ccBase + i; // CC1〜24
+        midimixarray[i].lastCcValue = 0;
     }
 
-    // フェーダー 24〜31
+    // フェーダー 8 本
     for (int i = 0; i < NUM_FADERS; ++i) {
         int idx = NUM_KNOBS + i;
         midimixarray[idx].ParName = "Fader" + std::to_string(i + 1);
         midimixarray[idx].val = 0.0f;
         midimixarray[idx].lastSentVal = midimixarray[idx].val;
         midimixarray[idx].oscAddress = "/midimix/fader/" + std::to_string(i + 1);
+
+        midimixarray[idx].ccNumber = ccBase + NUM_KNOBS + i; // CC25〜32
+        midimixarray[idx].lastCcValue = 0;
     }
 }
+
+
 
 void ofApp::updateLaunchPadFromMidi() {
     float now = ofGetElapsedTimef();
@@ -62,7 +91,7 @@ void ofApp::updateLaunchPadFromMidi() {
     for (int i = 0; i < LP_PADS; ++i) {
         LaunchPad& p = launchPads[i];
 
-        int cc = launchpad.getCCValue(p.ccNumber); // 0〜127
+        int cc = launchpad.getCCValue(1,p.ccNumber); // 0〜127
         bool down = (cc > 0);                         // 押してる？
         bool wasDown = (p.lastCcValue > 0);
         bool pressed = down && !wasDown;              // 立ち上がり
@@ -187,7 +216,7 @@ void ofApp::drawMidiMix() {
         for (int col = 0; col < 8; ++col) {
             ImGui::BeginGroup();
             for (int row = 0; row < 3; ++row) {
-                int i = row * 8 + col; // 0〜23
+                int i = row * 8 + col; // 0〜
                 ImGui::PushID(i);
                 ImGuiKnobs::Knob("##knob",
                     &midimixarray[i].val,
@@ -326,9 +355,7 @@ void ofApp::setupSpout(){
 	spout.setupAuto(spoutSenderName, spouttexture, false);
 }
 
-void ofApp::LinkMidi(){
-	// Link MIDI here if needed
-}
+
 
 void ofApp::setup(){
 	xml.loadFile("config.xml");
@@ -363,8 +390,11 @@ void ofApp::update() {
     sendOscChangedParamsOsc();
     sendLaunchPadOsc();
 
-    if (launchpad.getCCValue(0) != 0) {
-        cout << ofToString(launchpad.getCCValue(0)) << endl;
+    for (int cc = 0; cc < 32; ++cc) {
+        int v = midimix.getCCValue(2,cc);
+        if (v != 0) {
+            ofLogNotice() << "midimix CC " << cc << " = " << v;
+        }
     }
 }
 

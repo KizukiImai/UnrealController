@@ -47,6 +47,7 @@ class ofApp : public ofBaseApp{
 		void updateLaunchPadFromMidi();
 		void setupMidi();
 		void updateMidi();
+		void updateMidiMixFromMidi();
 
 		ofxMidiManager midiManager;
 		ofxOscSender oscsender;
